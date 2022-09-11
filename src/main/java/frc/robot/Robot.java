@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -12,11 +14,14 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.team4646.TalonFXFactory;
 
 public class Robot extends TimedRobot {
 
 
-  private final SwerveModule m_frontLeft = new SwerveModule(1, 2, 0, 1, 2, 3);
+  private final SwerveModuleTalon m_frontLeft = new SwerveModuleTalon(1, 2, 0, 1, 2, 3);
+  
+  private final TalonFX motorTest = TalonFXFactory.createDefaultTalon(11);
 
   private final XboxController m_controller = new XboxController(0);
   // private final Drivetrain m_swerve = new Drivetrain();

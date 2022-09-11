@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Encoder;
+import frc.team4646.TalonFXFactory;
 
 public class SwerveModuleTalon {
   private static final double kWheelRadius = 0.0508;
@@ -62,8 +63,11 @@ public class SwerveModuleTalon {
       int driveEncoderChannelB,
       int turningEncoderChannelA,
       int turningEncoderChannelB) {
-    m_driveMotor = new TalonFX(driveMotorChannel);
-    m_turningMotor = new TalonFX(turningMotorChannel);
+    // m_driveMotor = new TalonFX(driveMotorChannel);
+    m_driveMotor = TalonFXFactory.createDefaultTalon(driveMotorChannel);
+    // m_turningMotor = new TalonFX(turningMotorChannel);
+    m_turningMotor = TalonFXFactory.createDefaultTalon(turningMotorChannel);
+
 
     m_driveEncoder = new Encoder(driveEncoderChannelA, driveEncoderChannelB);
     m_turningEncoder = new Encoder(turningEncoderChannelA, turningEncoderChannelB);
@@ -99,21 +103,17 @@ public class SwerveModuleTalon {
    */
   public void setDesiredState(SwerveModuleState desiredState) {
     // Optimize the reference state to avoid spinning further than 90 degrees
-    SwerveModuleState state =
-        SwerveModuleState.optimize(desiredState, new Rotation2d(m_turningEncoder.get()));
+    SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(m_turningEncoder.get()));
 
     // Calculate the drive output from the drive PID controller.
-    final double driveOutput =
-        m_drivePIDController.calculate(m_driveEncoder.getRate(), state.speedMetersPerSecond);
+    final double driveOutput = m_drivePIDController.calculate(m_driveEncoder.getRate(), state.speedMetersPerSecond);
 
     final double driveFeedforward = m_driveFeedforward.calculate(state.speedMetersPerSecond);
 
     // Calculate the turning motor output from the turning PID controller.
-    final double turnOutput =
-        m_turningPIDController.calculate(m_turningEncoder.get(), state.angle.getRadians());
+    final double turnOutput = m_turningPIDController.calculate(m_turningEncoder.get(), state.angle.getRadians());
 
-    final double turnFeedforward =
-        m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
+    final double turnFeedforward = m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
 
     m_driveMotor.set(ControlMode.PercentOutput, driveOutput + driveFeedforward);
     m_turningMotor.set(ControlMode.PercentOutput, turnOutput + turnFeedforward);
