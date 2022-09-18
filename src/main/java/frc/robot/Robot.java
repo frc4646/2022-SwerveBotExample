@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.math.MathUtil;
@@ -19,9 +20,9 @@ import frc.team4646.TalonFXFactory;
 public class Robot extends TimedRobot {
 
 
-  private final SwerveModuleTalon m_frontLeft = new SwerveModuleTalon(1, 2, 0, 1, 2, 3);
-  
-  private final TalonFX motorTest = TalonFXFactory.createDefaultTalon(11);
+  private final SwerveModule m_frontLeft = new SwerveModule(1, 2, 0, 1, 2, 3);
+ 
+  private final TalonFX motor11 = new TalonFX(11);
 
   private final XboxController m_controller = new XboxController(0);
   // private final Drivetrain m_swerve = new Drivetrain();
@@ -50,6 +51,7 @@ public class Robot extends TimedRobot {
     
     m_frontLeft.setDesiredState(desiredState);
 
+    motor11.set(ControlMode.Velocity, speed*1000);
 
     SmartDashboard.putNumber("speed", speed);
     SmartDashboard.putNumber("angle", angle.getDegrees());
