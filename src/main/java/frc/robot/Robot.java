@@ -42,21 +42,20 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    driveWithJoystick(true);
+    // driveWithJoystick(true);
 
     double speed = m_controller.getLeftY();
     Rotation2d angle = Rotation2d.fromDegrees( m_controller.getLeftX() );
 
     SwerveModuleState desiredState = new SwerveModuleState(speed, angle);
-    
-    m_frontLeft.setDesiredState(desiredState);
 
-    motor11.set(ControlMode.Velocity, speed*1000);
+    m_frontLeft.setDesiredState(desiredState);
 
     SmartDashboard.putNumber("speed", speed);
     SmartDashboard.putNumber("angle", angle.getDegrees());
 
 
+    motor11.set(ControlMode.Velocity, speed*1000);
   }
 
   private void driveWithJoystick(boolean fieldRelative) {
