@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.math.MathUtil;
@@ -15,14 +16,18 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.team4646.PID;
 import frc.team4646.TalonFXFactory;
+import frc.team4646.TalonUtil;
+import frc.team4646.Util;
 
 public class Robot extends TimedRobot {
 
 
   private final SwerveModule m_frontLeft = new SwerveModule(1, 2, 0, 1, 2, 3);
  
-  private final TalonFX motor11 = new TalonFX(11);
+  private final TalonFX motor11 =  TalonFXFactory.createDefaultTalon(11);
+  private final TalonFX motor12 = TalonFXFactory.createDefaultTalon(12);
 
   private final XboxController m_controller = new XboxController(0);
   // private final Drivetrain m_swerve = new Drivetrain();
@@ -31,6 +36,20 @@ public class Robot extends TimedRobot {
   private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
   private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
   private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(3);
+  
+  @Override
+  public void robotInit() {
+    PID PID11 = new PID(.06,0,0,0.04535);
+    
+    TalonUtil.checkError(motor11.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
+    TalonFXFactory.setPID(motor11,PID11);
+    TalonUtil.checkError(motor12.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
+    TalonFXFactory.setPID(motor12,PID11);
+
+  }
+
+
+
 
   @Override
   public void autonomousPeriodic() {
@@ -44,7 +63,7 @@ public class Robot extends TimedRobot {
   public void teleopPeriodic() {
     // driveWithJoystick(true);
 
-    double speed = m_controller.getLeftY();
+    double speed = Util.handleDeadband( m_controller.getLeftY(), .2);
     Rotation2d angle = Rotation2d.fromDegrees( m_controller.getLeftX() );
 
     SwerveModuleState desiredState = new SwerveModuleState(speed, angle);
@@ -55,7 +74,16 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("angle", angle.getDegrees());
 
 
-    motor11.set(ControlMode.Velocity, speed*1000);
+    motor11.set(ControlMode.Velocity, speed*6000 / 600.0 * 2048);
+
+    // motor12.set(ControlMode.PercentOutput, speed);
+
+    SmartDashboard.putNumber("motor RPM", motor11.getSensorCollection().getIntegratedSensorVelocity()*(600.0/2048));
+
+    SmartDashboard.putNumber("motor Position", motor11.getSensorCollection().getIntegratedSensorPosition());
+
+
+
   }
 
   private void driveWithJoystick(boolean fieldRelative) {
