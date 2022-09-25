@@ -24,9 +24,8 @@ import frc.team4646.Util;
 public class Robot extends TimedRobot {
 
 
-  private final SwerveModule m_frontLeft = new SwerveModule(1, 2, 0, 1, 2, 3);
+  private final SwerveModule m_frontLeft = new SwerveModule(11, 12, 0, 1, 2, 3);
  
-  private final TalonFX motor11 =  TalonFXFactory.createDefaultTalon(11);
   private final TalonFX motor12 = TalonFXFactory.createDefaultTalon(12);
 
   private final XboxController m_controller = new XboxController(0);
@@ -74,7 +73,7 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("angle", angle.getDegrees());
 
 
-    motor11.set(ControlMode.Velocity, speed*6000 / 600.0 * 2048);
+    
 
     // motor12.set(ControlMode.PercentOutput, speed);
 

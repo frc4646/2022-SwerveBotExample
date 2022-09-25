@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -13,17 +16,19 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import frc.team4646.TalonFXFactory;
+
 
 public class SwerveModule {
-  private static final double kWheelRadius = 0.0508;
-  private static final int kEncoderResolution = 4096;
+  private static final double kWheelRadius = 0.0508; //TODO
+  private static final int kEncoderResolution = 2048;
 
   private static final double kModuleMaxAngularVelocity = Drivetrain.kMaxAngularSpeed;
   private static final double kModuleMaxAngularAcceleration =
       2 * Math.PI; // radians per second squared
 
-  private final MotorController m_driveMotor;
-  private final MotorController m_turningMotor;
+  private final TalonFX m_driveMotor;
+  private final TalonFX m_turningMotor;
 
   private final Encoder m_driveEncoder;
   private final Encoder m_turningEncoder;
@@ -61,8 +66,12 @@ public class SwerveModule {
       int driveEncoderChannelB,
       int turningEncoderChannelA,
       int turningEncoderChannelB) {
-    m_driveMotor = new PWMSparkMax(driveMotorChannel);
-    m_turningMotor = new PWMSparkMax(turningMotorChannel);
+
+
+    m_driveMotor = TalonFXFactory.createDefaultTalon(driveMotorChannel);
+    m_turningMotor =  TalonFXFactory.createDefaultTalon(turningMotorChannel);
+
+
 
     m_driveEncoder = new Encoder(driveEncoderChannelA, driveEncoderChannelB);
     m_turningEncoder = new Encoder(turningEncoderChannelA, turningEncoderChannelB);
@@ -114,7 +123,11 @@ public class SwerveModule {
     final double turnFeedforward =
         m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
 
-    m_driveMotor.setVoltage(driveOutput + driveFeedforward);
-    m_turningMotor.setVoltage(turnOutput + turnFeedforward);
+    //m_driveMotor.setVoltage(driveOutput + driveFeedforward);
+   // m_turningMotor.setVoltage(turnOutput + turnFeedforward);
+
+    m_driveMotor.set(ControlMode.Velocity, speed*6000 / 600.0 * 2048);
+    m_turningMotor.set(ControlMode.Velocity, speed*6000 / 600.0 * 2048);
+
   }
 }
