@@ -24,9 +24,9 @@ import frc.team4646.Util;
 public class Robot extends TimedRobot {
 
 
-  private final SwerveModule m_frontLeft = new SwerveModule(11, 12, 0, 1, 2, 3);
+  private final SwerveModule m_frontLeft = new SwerveModule(12, 11, 0, 3);
  
-  private final TalonFX motor12 = TalonFXFactory.createDefaultTalon(12);
+ // private final TalonFX motor12 = TalonFXFactory.createDefaultTalon(12);
 
   private final XboxController m_controller = new XboxController(0);
   // private final Drivetrain m_swerve = new Drivetrain();
@@ -40,10 +40,10 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     PID PID11 = new PID(.06,0,0,0.04535);
     
-    TalonUtil.checkError(motor11.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
-    TalonFXFactory.setPID(motor11,PID11);
-    TalonUtil.checkError(motor12.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
-    TalonFXFactory.setPID(motor12,PID11);
+  //  TalonUtil.checkError(motor11.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
+  //  TalonFXFactory.setPID(motor11,PID11);
+  //  TalonUtil.checkError(motor12.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
+  //  TalonFXFactory.setPID(motor12,PID11);
 
   }
 
@@ -77,9 +77,10 @@ public class Robot extends TimedRobot {
 
     // motor12.set(ControlMode.PercentOutput, speed);
 
-    SmartDashboard.putNumber("motor RPM", motor11.getSensorCollection().getIntegratedSensorVelocity()*(600.0/2048));
+    SmartDashboard.putNumber("motor RPM", m_frontLeft.getState().speedMetersPerSecond);
 
-    SmartDashboard.putNumber("motor Position", motor11.getSensorCollection().getIntegratedSensorPosition());
+   // SmartDashboard.putNumber("motor Position", motor11.getSensorCollection().getIntegratedSensorPosition());
+   SmartDashboard.putNumber("motor Angle", m_frontLeft.getState().angle.getDegrees());
 
 
 

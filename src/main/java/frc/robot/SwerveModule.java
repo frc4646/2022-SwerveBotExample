@@ -5,6 +5,7 @@
 package frc.robot;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -16,7 +17,9 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.PWMSparkMax;
+import frc.team4646.PID;
 import frc.team4646.TalonFXFactory;
+import frc.team4646.TalonUtil;
 
 
 public class SwerveModule {
@@ -30,11 +33,7 @@ public class SwerveModule {
   private final TalonFX m_driveMotor;
   private final TalonFX m_turningMotor;
 
-  private final Encoder m_driveEncoder;
   private final Encoder m_turningEncoder;
-
-  // Gains are for example purposes only - must be determined for your own robot!
-  private final PIDController m_drivePIDController = new PIDController(1, 0, 0);
 
   // Gains are for example purposes only - must be determined for your own robot!
   private final ProfiledPIDController m_turningPIDController =
@@ -45,9 +44,6 @@ public class SwerveModule {
           new TrapezoidProfile.Constraints(
               kModuleMaxAngularVelocity, kModuleMaxAngularAcceleration));
 
-  // Gains are for example purposes only - must be determined for your own robot!
-  private final SimpleMotorFeedforward m_driveFeedforward = new SimpleMotorFeedforward(1, 3);
-  private final SimpleMotorFeedforward m_turnFeedforward = new SimpleMotorFeedforward(1, 0.5);
 
   /**
    * Constructs a SwerveModule with a drive motor, turning motor, drive encoder and turning encoder.
@@ -62,8 +58,8 @@ public class SwerveModule {
   public SwerveModule(
       int driveMotorChannel,
       int turningMotorChannel,
-      int driveEncoderChannelA,
-      int driveEncoderChannelB,
+  //    int driveEncoderChannelA,
+  //   int driveEncoderChannelB,
       int turningEncoderChannelA,
       int turningEncoderChannelB) {
 
@@ -71,15 +67,23 @@ public class SwerveModule {
     m_driveMotor = TalonFXFactory.createDefaultTalon(driveMotorChannel);
     m_turningMotor =  TalonFXFactory.createDefaultTalon(turningMotorChannel);
 
+    PID drivePID = new PID(.06,0,0,0.04535);
+    
+     TalonUtil.checkError(m_driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
+     TalonFXFactory.setPID(m_driveMotor,drivePID);
 
 
-    m_driveEncoder = new Encoder(driveEncoderChannelA, driveEncoderChannelB);
+     PID turningPID = new PID(.06,0,0,0.04535);
+    
+      TalonUtil.checkError(m_turningMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
+      TalonFXFactory.setPID(m_turningMotor,turningPID);
+
+
+
+
     m_turningEncoder = new Encoder(turningEncoderChannelA, turningEncoderChannelB);
 
-    // Set the distance per pulse for the drive encoder. We can simply use the
-    // distance traveled for one rotation of the wheel divided by the encoder
-    // resolution.
-    m_driveEncoder.setDistancePerPulse(2 * Math.PI * kWheelRadius / kEncoderResolution);
+  
 
     // Set the distance (in this case, angle) per pulse for the turning encoder.
     // This is the the angle through an entire rotation (2 * pi) divided by the
@@ -97,7 +101,9 @@ public class SwerveModule {
    * @return The current state of the module.
    */
   public SwerveModuleState getState() {
-    return new SwerveModuleState(m_driveEncoder.getRate(), new Rotation2d(m_turningEncoder.get()));
+    return new SwerveModuleState(m_driveMotor.getSensorCollection().getIntegratedSensorVelocity()*(600.0/2048),
+                new Rotation2d(m_turningMotor.getSensorCollection().getIntegratedSensorPosition()/2048));
+
   }
 
   /**
@@ -110,24 +116,10 @@ public class SwerveModule {
     SwerveModuleState state =
         SwerveModuleState.optimize(desiredState, new Rotation2d(m_turningEncoder.get()));
 
-    // Calculate the drive output from the drive PID controller.
-    final double driveOutput =
-        m_drivePIDController.calculate(m_driveEncoder.getRate(), state.speedMetersPerSecond);
 
-    final double driveFeedforward = m_driveFeedforward.calculate(state.speedMetersPerSecond);
 
-    // Calculate the turning motor output from the turning PID controller.
-    final double turnOutput =
-        m_turningPIDController.calculate(m_turningEncoder.get(), state.angle.getRadians());
-
-    final double turnFeedforward =
-        m_turnFeedforward.calculate(m_turningPIDController.getSetpoint().velocity);
-
-    //m_driveMotor.setVoltage(driveOutput + driveFeedforward);
-   // m_turningMotor.setVoltage(turnOutput + turnFeedforward);
-
-    m_driveMotor.set(ControlMode.Velocity, speed*6000 / 600.0 * 2048);
-    m_turningMotor.set(ControlMode.Velocity, speed*6000 / 600.0 * 2048);
+    m_driveMotor.set(ControlMode.Velocity, state.speedMetersPerSecond*6000 / 600.0 * 2048);
+    m_turningMotor.set(ControlMode.Position, state.angle.getDegrees()* 1500);
 
   }
 }
