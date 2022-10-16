@@ -6,7 +6,10 @@ package frc.robot.Subsystems.SwerveDrive;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
+import com.ctre.phoenix.motorcontrol.RemoteFeedbackDevice;
+import com.ctre.phoenix.motorcontrol.RemoteSensorSource;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenix.motorcontrol.can.TalonFXConfiguration;
 import com.ctre.phoenix.sensors.CANCoder;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -69,6 +72,10 @@ public class SwerveModule {
     TalonFXFactory.setPID(m_turningMotor,turningPID);
 
     m_turningEncoder = new CANCoder(turningEncoderChannel);
+
+    m_turningMotor.configRemoteFeedbackFilter( 20, RemoteSensorSource.CANCoder, 0);
+    m_turningMotor.configSelectedFeedbackSensor(RemoteFeedbackDevice.RemoteSensor0);
+
     // m_turningEncoder = new Encoder(turningEncoderChannelA, turningEncoderChannelB);
   
 
@@ -103,6 +110,9 @@ public class SwerveModule {
    // SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(m_turningEncoder.getAbsolutePosition()));
     SmartDashboard.putNumber("encoderangle", m_turningEncoder.getAbsolutePosition());
    // m_driveMotor.set(ControlMode.Velocity, state.speedMetersPerSecond * kMpsToRPM);
-    m_turningMotor.set(ControlMode.Position, desiredState.angle.getDegrees() * kTurningGearRatio);
+    // m_turningMotor.set(ControlMode.Position, ((desiredState.angle.getDegrees()) / 360) * 4096 );
+    double delta = desiredState.angle.minus(Rotation2d.fromDegrees(m_turningEncoder.getAbsolutePosition())).getDegrees() / 360 * 4096;
+    m_turningMotor.set(ControlMode.Position, m_turningEncoder.getPosition()/m_turningEncoder.configGetFeedbackCoefficient() + delta );
+    
   }
 }
