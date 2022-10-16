@@ -13,6 +13,7 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.team4646.PID;
 import frc.team4646.TalonFXFactory;
 import frc.team4646.TalonUtil;
@@ -22,7 +23,7 @@ public class SwerveModule {
   private static final double kWheelRadius = 0.0508;
 
   private static final double kMpsToRPM = 6000 / 600.0 * 2048;
-  private static final double kTurningGearRatio = 1500;
+  private static final double kTurningGearRatio = 150/7;
 
   private static final double kModuleMaxAngularVelocity = Drivetrain.kMaxAngularSpeed;
   private static final double kModuleMaxAngularAcceleration = 2 * Math.PI; // radians per second squared
@@ -99,9 +100,9 @@ public class SwerveModule {
    */
   public void setDesiredState(SwerveModuleState desiredState) {
     // Optimize the reference state to avoid spinning further than 90 degrees
-    SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(m_turningEncoder.getAbsolutePosition()));
-
-    m_driveMotor.set(ControlMode.Velocity, state.speedMetersPerSecond * kMpsToRPM);
-    m_turningMotor.set(ControlMode.Position, state.angle.getDegrees() * kTurningGearRatio);
+   // SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(m_turningEncoder.getAbsolutePosition()));
+    SmartDashboard.putNumber("encoderangle", m_turningEncoder.getAbsolutePosition());
+   // m_driveMotor.set(ControlMode.Velocity, state.speedMetersPerSecond * kMpsToRPM);
+    m_turningMotor.set(ControlMode.Position, desiredState.angle.getDegrees() * kTurningGearRatio);
   }
 }

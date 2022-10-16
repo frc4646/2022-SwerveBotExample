@@ -15,7 +15,7 @@ import frc.team4646.Util;
 
 public class Robot extends TimedRobot {
   // private final Drivetrain m_swerve = new Drivetrain();
-  private final SwerveModule m_frontLeft = new SwerveModule(12, 11, 0);
+  private final SwerveModule m_frontLeft = new SwerveModule(12, 11, 20);
 
   private final XboxController m_controller = new XboxController(0);
 
@@ -38,7 +38,7 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     double speed = Util.handleDeadband( m_controller.getLeftY(), .2);
-    Rotation2d angle = Rotation2d.fromDegrees( m_controller.getLeftX() );
+    Rotation2d angle = Rotation2d.fromDegrees( m_controller.getLeftX()*90 );
 
     SwerveModuleState desiredState = new SwerveModuleState(speed, angle);
 
