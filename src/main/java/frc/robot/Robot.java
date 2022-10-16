@@ -4,32 +4,20 @@
 
 package frc.robot;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.FeedbackDevice;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
-
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.team4646.PID;
-import frc.team4646.TalonFXFactory;
-import frc.team4646.TalonUtil;
+import frc.robot.Subsystems.SwerveDrive.SwerveModule;
 import frc.team4646.Util;
 
 public class Robot extends TimedRobot {
-
-
-  private final SwerveModule m_frontLeft = new SwerveModule(12, 11, 0, 3);
- 
- // private final TalonFX motor12 = TalonFXFactory.createDefaultTalon(12);
+  // private final Drivetrain m_swerve = new Drivetrain();
+  private final SwerveModule m_frontLeft = new SwerveModule(12, 11, 0);
 
   private final XboxController m_controller = new XboxController(0);
-  // private final Drivetrain m_swerve = new Drivetrain();
 
   // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
   private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
@@ -38,30 +26,17 @@ public class Robot extends TimedRobot {
   
   @Override
   public void robotInit() {
-    PID PID11 = new PID(.06,0,0,0.04535);
-    
-  //  TalonUtil.checkError(motor11.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
-  //  TalonFXFactory.setPID(motor11,PID11);
-  //  TalonUtil.checkError(motor12.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
-  //  TalonFXFactory.setPID(motor12,PID11);
 
   }
-
-
-
 
   @Override
   public void autonomousPeriodic() {
     // driveWithJoystick(false);
     // m_swerve.updateOdometry();
-
-
   }
 
   @Override
   public void teleopPeriodic() {
-    // driveWithJoystick(true);
-
     double speed = Util.handleDeadband( m_controller.getLeftY(), .2);
     Rotation2d angle = Rotation2d.fromDegrees( m_controller.getLeftX() );
 
@@ -71,19 +46,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("speed", speed);
     SmartDashboard.putNumber("angle", angle.getDegrees());
-
-
-    
-
-    // motor12.set(ControlMode.PercentOutput, speed);
-
     SmartDashboard.putNumber("motor RPM", m_frontLeft.getState().speedMetersPerSecond);
-
-   // SmartDashboard.putNumber("motor Position", motor11.getSensorCollection().getIntegratedSensorPosition());
-   SmartDashboard.putNumber("motor Angle", m_frontLeft.getState().angle.getDegrees());
-
-
-
+    SmartDashboard.putNumber("motor Angle", m_frontLeft.getState().angle.getDegrees());
   }
 
   private void driveWithJoystick(boolean fieldRelative) {
