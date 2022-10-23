@@ -7,6 +7,7 @@ package frc.robot.Subsystems.SwerveDrive;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenix.sensors.AbsoluteSensorRange;
 import com.ctre.phoenix.sensors.CANCoder;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -63,14 +64,21 @@ public class SwerveModule {
     TalonUtil.checkError(m_driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
     TalonFXFactory.setPID(m_driveMotor,drivePID);
 
-    PID turningPID = new PID(.06, 0, 0, 0.04535);
-  
-    TalonUtil.checkError(m_turningMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
+    PID turningPID = new PID(0.0001999998, 0, 0, 0);
+
+   // TalonUtil.checkError(m_turningMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
     TalonFXFactory.setPID(m_turningMotor,turningPID);
 
     m_turningEncoder = new CANCoder(turningEncoderChannel);
     // m_turningEncoder = new Encoder(turningEncoderChannelA, turningEncoderChannelB);
-  
+    m_turningMotor.configRemoteFeedbackFilter(m_turningEncoder, 0);
+    m_turningMotor.configSelectedFeedbackSensor(FeedbackDevice.RemoteSensor0);
+
+    m_turningEncoder.configAbsoluteSensorRange(AbsoluteSensorRange.Signed_PlusMinus180);
+    m_turningMotor.configIntegratedSensorAbsoluteRange(AbsoluteSensorRange.Signed_PlusMinus180);
+    m_turningMotor.configSelectedFeedbackCoefficient(m_turningEncoder.configGetFeedbackCoefficient());
+    
+
 
     // Set the distance (in this case, angle) per pulse for the turning encoder.
     // This is the the angle through an entire rotation (2 * pi) divided by the
@@ -89,7 +97,7 @@ public class SwerveModule {
    */
   public SwerveModuleState getState() {
     return new SwerveModuleState(m_driveMotor.getSensorCollection().getIntegratedSensorVelocity()*(600.0/2048),
-                new Rotation2d(m_turningMotor.getSensorCollection().getIntegratedSensorPosition()/2048));
+                new Rotation2d(m_turningEncoder.getAbsolutePosition()));
 
   }
 
@@ -102,7 +110,12 @@ public class SwerveModule {
     // Optimize the reference state to avoid spinning further than 90 degrees
    // SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(m_turningEncoder.getAbsolutePosition()));
     SmartDashboard.putNumber("encoderangle", m_turningEncoder.getAbsolutePosition());
+    //double degreePosition = m_turningEncoder.getAbsolutePosition();
+    //double diffInDegrees = desiredState.angle.getDegrees() - degreePosition;
+
    // m_driveMotor.set(ControlMode.Velocity, state.speedMetersPerSecond * kMpsToRPM);
-    m_turningMotor.set(ControlMode.Position, desiredState.angle.getDegrees() * kTurningGearRatio);
+    m_turningMotor.set(ControlMode.Position, (desiredState.angle.getDegrees() - 
+    m_turningEncoder.getAbsolutePosition() + m_turningEncoder.getPosition()) / m_turningEncoder.configGetFeedbackCoefficient());
+    
   }
 }

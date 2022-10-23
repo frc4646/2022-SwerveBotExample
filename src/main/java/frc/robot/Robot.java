@@ -38,7 +38,8 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
     double speed = Util.handleDeadband( m_controller.getLeftY(), .2);
-    Rotation2d angle = Rotation2d.fromDegrees( m_controller.getLeftX()*90 );
+    // takes the values of -1 and 1 from getLeftX()and multiplies them by 90
+    Rotation2d angle = Rotation2d.fromDegrees( m_controller.getLeftX()*90 );  
 
     SwerveModuleState desiredState = new SwerveModuleState(speed, angle);
 
