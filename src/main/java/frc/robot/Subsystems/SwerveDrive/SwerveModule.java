@@ -55,16 +55,18 @@ public class SwerveModule {
       int driveMotorChannel,
       int turningMotorChannel,
       int turningEncoderChannel) {
-
+    //SmartDashboard.putNumber("set position", 0);
     m_driveMotor = TalonFXFactory.createDefaultTalon(driveMotorChannel);
     m_turningMotor =  TalonFXFactory.createDefaultTalon(turningMotorChannel);
+    m_turningMotor.setSensorPhase(true);
+
 
     PID drivePID = new PID(.06, 0, 0, 0.04535);
     
     TalonUtil.checkError(m_driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
     TalonFXFactory.setPID(m_driveMotor,drivePID);
 
-    PID turningPID = new PID(0.0001999998, 0, 0, 0);
+    PID turningPID = new PID(0.02, 0, 0, 0.038);
 
    // TalonUtil.checkError(m_turningMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
     TalonFXFactory.setPID(m_turningMotor,turningPID);
@@ -110,12 +112,19 @@ public class SwerveModule {
     // Optimize the reference state to avoid spinning further than 90 degrees
    // SwerveModuleState state = SwerveModuleState.optimize(desiredState, new Rotation2d(m_turningEncoder.getAbsolutePosition()));
     SmartDashboard.putNumber("encoderangle", m_turningEncoder.getAbsolutePosition());
+
     //double degreePosition = m_turningEncoder.getAbsolutePosition();
     //double diffInDegrees = desiredState.angle.getDegrees() - degreePosition;
 
    // m_driveMotor.set(ControlMode.Velocity, state.speedMetersPerSecond * kMpsToRPM);
-    m_turningMotor.set(ControlMode.Position, (desiredState.angle.getDegrees() - 
-    m_turningEncoder.getAbsolutePosition() + m_turningEncoder.getPosition()) / m_turningEncoder.configGetFeedbackCoefficient());
+   //m_turningMotor.set(ControlMode.Position, (desiredState.angle.getDegrees() - 
+    //m_turningEncoder.getAbsolutePosition() + m_turningEncoder.getPosition()) / m_turningEncoder.configGetFeedbackCoefficient());
     
+    SmartDashboard.putNumber("commanded Angle", (desiredState.angle.getDegrees() - 
+    m_turningEncoder.getAbsolutePosition() + m_turningEncoder.getPosition()) / m_turningEncoder.configGetFeedbackCoefficient());
+    SmartDashboard.putNumber("get position 1", m_turningEncoder.getPosition());
+    SmartDashboard.putNumber("get position 2", m_turningEncoder.getPosition() / m_turningEncoder.configGetFeedbackCoefficient());
+
+    m_turningMotor.set(ControlMode.Position, SmartDashboard.getNumber("set position", 0));
   }
 }
