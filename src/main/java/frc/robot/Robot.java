@@ -9,13 +9,17 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Subsystems.SwerveDrive.SwerveModule;
 import frc.team4646.Util;
 
 public class Robot extends TimedRobot {
   // private final Drivetrain m_swerve = new Drivetrain();
-  private final SwerveModule m_frontLeft = new SwerveModule(12, 11, 20);
+  ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Drivetrain");
+  private final SwerveModule m_frontLeft = new SwerveModule(12, 11, 20, shuffleboardTab.getLayout("Front Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(0, 0));
 
   private final XboxController m_controller = new XboxController(0);
 
@@ -37,18 +41,23 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopPeriodic() {
-    double speed = Util.handleDeadband( m_controller.getLeftY(), .2);
-    // takes the values of -1 and 1 from getLeftX()and multiplies them by 90
-    Rotation2d angle = Rotation2d.fromDegrees( m_controller.getLeftX()*90 );  
 
-    SwerveModuleState desiredState = new SwerveModuleState(speed, angle);
+    // takes the values of -1 and 1 from getLeftY() and multiplies it by max velocity of 4.5 mps
+    double speedMPS = Util.handleDeadband( m_controller.getLeftY(), .2) * 4.5;
+    
+    // takes the values of -1 and 1 from getLeftX() and multiplies it by 180
+    Rotation2d angle = Rotation2d.fromDegrees( m_controller.getRightX() * 180 );  
 
+    // combine speed and angle into our desired state
+    SwerveModuleState desiredState = new SwerveModuleState(speedMPS, angle);
+
+    // set the module's desired state
     m_frontLeft.setDesiredState(desiredState);
 
-    SmartDashboard.putNumber("speed", speed);
-    SmartDashboard.putNumber("angle", angle.getDegrees());
-    SmartDashboard.putNumber("motor RPM", m_frontLeft.getState().speedMetersPerSecond);
-    SmartDashboard.putNumber("motor Angle", m_frontLeft.getState().angle.getDegrees());
+    SmartDashboard.putNumber("Commanded Speed", speedMPS);
+    SmartDashboard.putNumber("Commanded Angle", angle.getDegrees());
+    SmartDashboard.putNumber("Actual Speed", m_frontLeft.getState().speedMetersPerSecond);
+    SmartDashboard.putNumber("Actual Angle", m_frontLeft.getState().angle.getDegrees());
 
   }
 

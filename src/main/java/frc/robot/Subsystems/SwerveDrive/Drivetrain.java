@@ -9,10 +9,13 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.wpilibj.AnalogGyro;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 /** Represents a swerve drive style drivetrain. */
 public class Drivetrain {
-  public static final double kMaxSpeed = 3.0; // 3 meters per second
+  public static final double kMaxSpeed = 4.5; // 4.5 meters per second
   public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
 
   private final Translation2d m_frontLeftLocation = new Translation2d(0.381, 0.381);
@@ -20,10 +23,12 @@ public class Drivetrain {
   private final Translation2d m_backLeftLocation = new Translation2d(-0.381, 0.381);
   private final Translation2d m_backRightLocation = new Translation2d(-0.381, -0.381);
 
-  private final SwerveModule m_frontLeft = new SwerveModule(1, 2, 0);
-  private final SwerveModule m_frontRight = new SwerveModule(3, 4, 4);
-  private final SwerveModule m_backLeft = new SwerveModule(5, 6, 8);
-  private final SwerveModule m_backRight = new SwerveModule(7, 8, 12);
+  ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Drivetrain");
+
+  private final SwerveModule m_frontLeft = new SwerveModule(1, 2, 0, shuffleboardTab.getLayout("Front Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(0, 0));
+  private final SwerveModule m_frontRight = new SwerveModule(3, 4, 4, shuffleboardTab.getLayout("Front Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(2, 0));
+  private final SwerveModule m_backLeft = new SwerveModule(5, 6, 8, shuffleboardTab.getLayout("Front Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(4, 0));
+  private final SwerveModule m_backRight = new SwerveModule(7, 8, 12, shuffleboardTab.getLayout("Front Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(6, 0));
 
   private final AnalogGyro m_gyro = new AnalogGyro(0);
 
