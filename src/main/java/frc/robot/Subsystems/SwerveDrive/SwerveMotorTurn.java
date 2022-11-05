@@ -33,7 +33,7 @@ public class SwerveMotorTurn
     private final double motorEncoderPositionCoefficient;
     private final double motorEncoderVelocityCoefficient;
 
-    private boolean optimizeAngles = false;
+    private boolean optimizeAngles = true;
 
     private final TalonFX motor;
     private final CANCoder encoder;
