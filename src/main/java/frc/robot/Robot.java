@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -13,20 +14,21 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Subsystems.SwerveDrive.Drivetrain;
 import frc.robot.Subsystems.SwerveDrive.SwerveModule;
 import frc.team4646.Util;
 
 public class Robot extends TimedRobot {
-  // private final Drivetrain m_swerve = new Drivetrain();
-  ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Drivetrain");
-  private final SwerveModule m_frontLeft = new SwerveModule(12, 11, 20, shuffleboardTab.getLayout("Front Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(0, 0));
+   private final Drivetrain m_swerve = new Drivetrain();
+ // ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Drivetrain");
+  //private final SwerveModule m_frontLeft = new SwerveModule(12, 11, 20, shuffleboardTab.getLayout("Front Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(0, 0));
 
   private final XboxController m_controller = new XboxController(0);
 
   // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
-  private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(3);
-  private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(3);
-  private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(3);
+  private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(.1);
+  private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(.1);
+  private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(.1);
   
   @Override
   public void robotInit() {
@@ -42,47 +44,32 @@ public class Robot extends TimedRobot {
   @Override
   public void teleopPeriodic() {
 
-    // takes the values of -1 and 1 from getLeftY() and multiplies it by max velocity of 4.5 mps
-    double speedMPS = Util.handleDeadband( m_controller.getLeftY(), .2) * 4.5;
-    
-    // takes the values of -1 and 1 from getLeftX() and multiplies it by 180
-    Rotation2d angle = Rotation2d.fromDegrees( m_controller.getRightX() * 180 );  
-
-    // combine speed and angle into our desired state
-    SwerveModuleState desiredState = new SwerveModuleState(speedMPS, angle);
-
-    // set the module's desired state
-    m_frontLeft.setDesiredState(desiredState);
-
-    SmartDashboard.putNumber("Commanded Speed", speedMPS);
-    SmartDashboard.putNumber("Commanded Angle", angle.getDegrees());
-    SmartDashboard.putNumber("Actual Speed", m_frontLeft.getState().speedMetersPerSecond);
-    SmartDashboard.putNumber("Actual Angle", m_frontLeft.getState().angle.getDegrees());
-
+   // m_swerve.drive(m_controller.getLeftX() * Drivetrain.kMaxSpeed, m_controller.getLeftY() * Drivetrain.kMaxSpeed, m_controller.getRightX() * Drivetrain.kMaxAngularSpeed, false);
+    driveWithJoystick(false);
   }
 
   private void driveWithJoystick(boolean fieldRelative) {
     // Get the x speed. We are inverting this because Xbox controllers return
     // negative values when we push forward.
-    // final var xSpeed =
-    //     -m_xspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftY(), 0.02))
-    //         * Drivetrain.kMaxSpeed;
+     final var xSpeed =
+         -m_xspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftY(), 0.07))
+             * Drivetrain.kMaxSpeed;
 
     // Get the y speed or sideways/strafe speed. We are inverting this because
     // we want a positive value when we pull to the left. Xbox controllers
     // return positive values when you pull to the right by default.
-    // final var ySpeed =
-    //     -m_yspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftX(), 0.02))
-    //         * Drivetrain.kMaxSpeed;
+    final var ySpeed =
+        -m_yspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftX(), 0.07))
+            * Drivetrain.kMaxSpeed;
 
     // Get the rate of angular rotation. We are inverting this because we want a
     // positive value when we pull to the left (remember, CCW is positive in
     // mathematics). Xbox controllers return positive values when you pull to
     // the right by default.
-    // final var rot =
-    //     -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
-    //         * Drivetrain.kMaxAngularSpeed;
+    final var rot =
+        -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
+            * Drivetrain.kMaxAngularSpeed;
 
-    // m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative);
+    m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative);
   }
 }
