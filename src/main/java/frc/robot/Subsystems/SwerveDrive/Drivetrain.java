@@ -26,9 +26,9 @@ public class Drivetrain {
   ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Drivetrain");
 
   private final SwerveModule m_frontLeft = new SwerveModule(12, 11, 20, shuffleboardTab.getLayout("Front Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(0, 0));
- // private final SwerveModule m_frontRight = new SwerveModule(3, 4, 4, shuffleboardTab.getLayout("Front Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(2, 0));
- // private final SwerveModule m_backLeft = new SwerveModule(5, 6, 8, shuffleboardTab.getLayout("Front Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(4, 0));
-// private final SwerveModule m_backRight = new SwerveModule(7, 8, 12, shuffleboardTab.getLayout("Front Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(6, 0));
+ // private final SwerveModule m_frontRight = new SwerveModule(3, 4, 4, shuffleboardTab.getLayout("Front Right", BuiltInLayouts.kList).withSize(2, 4).withPosition(2, 0));
+ // private final SwerveModule m_backLeft = new SwerveModule(5, 6, 8, shuffleboardTab.getLayout("Back Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(4, 0));
+// private final SwerveModule m_backRight = new SwerveModule(7, 8, 12, shuffleboardTab.getLayout("Back Right", BuiltInLayouts.kList).withSize(2, 4).withPosition(6, 0));
 
   private final AnalogGyro m_gyro = new AnalogGyro(0);
 
