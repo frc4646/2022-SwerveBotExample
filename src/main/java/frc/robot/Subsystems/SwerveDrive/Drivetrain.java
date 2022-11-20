@@ -18,17 +18,17 @@ public class Drivetrain {
   public static final double kMaxSpeed = 4.5; // 4.5 meters per second
   public static final double kMaxAngularSpeed = Math.PI; // 1/2 rotation per second
 
-  private final Translation2d m_frontLeftLocation = new Translation2d(0.381, 0.381);
-  private final Translation2d m_frontRightLocation = new Translation2d(0.381, -0.381);
-  private final Translation2d m_backLeftLocation = new Translation2d(-0.381, 0.381);
-  private final Translation2d m_backRightLocation = new Translation2d(-0.381, -0.381);
+  private final Translation2d m_frontLeftLocation = new Translation2d(0.325, 0.295);
+  private final Translation2d m_frontRightLocation = new Translation2d(0.325, -0.295);
+  private final Translation2d m_backLeftLocation = new Translation2d(-0.325, 0.295);
+  private final Translation2d m_backRightLocation = new Translation2d(-0.325, -0.295);
 
   ShuffleboardTab shuffleboardTab = Shuffleboard.getTab("Drivetrain");
 
-  private final SwerveModule m_frontLeft = new SwerveModule(12, 11, 20, shuffleboardTab.getLayout("Front Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(0, 0));
- // private final SwerveModule m_frontRight = new SwerveModule(3, 4, 4, shuffleboardTab.getLayout("Front Right", BuiltInLayouts.kList).withSize(2, 4).withPosition(2, 0));
- // private final SwerveModule m_backLeft = new SwerveModule(5, 6, 8, shuffleboardTab.getLayout("Back Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(4, 0));
-// private final SwerveModule m_backRight = new SwerveModule(7, 8, 12, shuffleboardTab.getLayout("Back Right", BuiltInLayouts.kList).withSize(2, 4).withPosition(6, 0));
+  private final SwerveModule m_frontLeft = new SwerveModule(11, 12, 13, -10.7, shuffleboardTab.getLayout("Front Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(0, 0));
+  private final SwerveModule m_frontRight = new SwerveModule(14, 15, 16, 189.5, shuffleboardTab.getLayout("Front Right", BuiltInLayouts.kList).withSize(2, 4).withPosition(2, 0));
+  private final SwerveModule m_backLeft = new SwerveModule(20, 21, 22, 335.9, shuffleboardTab.getLayout("Back Left", BuiltInLayouts.kList).withSize(2, 4).withPosition(4, 0));
+  private final SwerveModule m_backRight = new SwerveModule(17, 18, 19, 180.5, shuffleboardTab.getLayout("Back Right", BuiltInLayouts.kList).withSize(2, 4).withPosition(6, 0));
 
   private final AnalogGyro m_gyro = new AnalogGyro(0);
 
@@ -60,18 +60,18 @@ public class Drivetrain {
                 : new ChassisSpeeds(xSpeed, ySpeed, rot));
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, kMaxSpeed);
     m_frontLeft.setDesiredState(swerveModuleStates[0]);
-   // m_frontRight.setDesiredState(swerveModuleStates[1]);
-  //  m_backLeft.setDesiredState(swerveModuleStates[2]);
-   // m_backRight.setDesiredState(swerveModuleStates[3]);
+    m_frontRight.setDesiredState(swerveModuleStates[1]);
+    m_backLeft.setDesiredState(swerveModuleStates[2]);
+    m_backRight.setDesiredState(swerveModuleStates[3]);
   }
 
   /** Updates the field relative position of the robot. */
   public void updateOdometry() {
-   // m_odometry.update(
-     //   m_gyro.getRotation2d(),
-     //   m_frontLeft.getState(),
-        //m_frontRight.getState(),
-        //m_backLeft.getState(),
-       // m_backRight.getState());
+    m_odometry.update(
+        m_gyro.getRotation2d(),
+        m_frontLeft.getState(),
+        m_frontRight.getState(),
+        m_backLeft.getState(),
+        m_backRight.getState());
   }
 }

@@ -26,9 +26,9 @@ public class Robot extends TimedRobot {
   private final XboxController m_controller = new XboxController(0);
 
   // Slew rate limiters to make joystick inputs more gentle; 1/3 sec from 0 to 1.
-  private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(.1);
-  private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(.1);
-  private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(.1);
+  private final SlewRateLimiter m_xspeedLimiter = new SlewRateLimiter(1);
+  private final SlewRateLimiter m_yspeedLimiter = new SlewRateLimiter(1);
+  private final SlewRateLimiter m_rotLimiter = new SlewRateLimiter(1);
   
   @Override
   public void robotInit() {
@@ -58,17 +58,17 @@ public class Robot extends TimedRobot {
     // Get the y speed or sideways/strafe speed. We are inverting this because
     // we want a positive value when we pull to the left. Xbox controllers
     // return positive values when you pull to the right by default.
-    final var ySpeed =
-        -m_yspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftX(), 0.07))
-            * Drivetrain.kMaxSpeed;
+    final var ySpeed = 0;
+        //-m_yspeedLimiter.calculate(MathUtil.applyDeadband(m_controller.getLeftX(), 0.07))
+         //   * Drivetrain.kMaxSpeed;
 
     // Get the rate of angular rotation. We are inverting this because we want a
     // positive value when we pull to the left (remember, CCW is positive in
     // mathematics). Xbox controllers return positive values when you pull to
     // the right by default.
-    final var rot =
-        -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
-            * Drivetrain.kMaxAngularSpeed;
+    final var rot = 0;
+       // -m_rotLimiter.calculate(MathUtil.applyDeadband(m_controller.getRightX(), 0.02))
+      //      * Drivetrain.kMaxAngularSpeed;
 
     m_swerve.drive(xSpeed, ySpeed, rot, fieldRelative);
   }

@@ -20,7 +20,7 @@ public class SwerveModule
      * @param turningMotorChannel CAN ID for the turning motor
      * @param turningEncoderChannel CAN ID for the turning encoder
      */
-    public SwerveModule(int driveMotorChannel, int turningMotorChannel, int turningEncoderChannel)
+    public SwerveModule(int driveMotorChannel, int turningMotorChannel, int turningEncoderChannel, double offset)
     {
         ModuleConfiguration moduleConfig = Mk4i.MK4I_L2;
 
@@ -28,7 +28,7 @@ public class SwerveModule
         m_driveMotor = new SwerveMotorDrive(driveMotorChannel, drivePID, moduleConfig);
 
         PID turningPID = new PID(0.2, 0, 0.1, 0);
-        turnMotor = new SwerveMotorTurn(turningMotorChannel, turningEncoderChannel, turningPID, moduleConfig);
+        turnMotor = new SwerveMotorTurn(turningMotorChannel, turningEncoderChannel, turningPID, moduleConfig, offset);
     }
 
     /**
@@ -39,9 +39,9 @@ public class SwerveModule
      * @param turningEncoderChannel CAN ID for the turning encoder
      * @param layout Shuffleboard layout
      */
-    public SwerveModule(int driveMotorChannel, int turningMotorChannel, int turningEncoderChannel, ShuffleboardLayout layout)
+    public SwerveModule(int driveMotorChannel, int turningMotorChannel, int turningEncoderChannel, double offset, ShuffleboardLayout layout)
     {
-        this(driveMotorChannel,turningMotorChannel,turningEncoderChannel);
+        this(driveMotorChannel,turningMotorChannel,turningEncoderChannel, offset);
 
         container = layout;
         container.addNumber("Current Angle", () -> Math.toDegrees(turnMotor.getMotorCurrentAngle()));

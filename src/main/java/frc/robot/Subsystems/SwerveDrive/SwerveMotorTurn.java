@@ -37,18 +37,20 @@ public class SwerveMotorTurn
 
     private final TalonFX motor;
     private final CANCoder encoder;
+    private final double offsetAngle;
 
     private boolean directionInverted = false;
 
-    public SwerveMotorTurn(int turningMotorChannel, int turningEncoderChannel, PID pid, ModuleConfiguration moduleConfig)
+    public SwerveMotorTurn(int turningMotorChannel, int turningEncoderChannel, PID pid, ModuleConfiguration moduleConfig, double offset)
     {
         motor =  TalonFXFactory.createDefaultTalon(turningMotorChannel);
         encoder = new CANCoder(turningEncoderChannel);
+        offsetAngle = offset;
         
         // configure the external encoder
         CANCoderConfiguration configEncoder = new CANCoderConfiguration();
         configEncoder.absoluteSensorRange = AbsoluteSensorRange.Unsigned_0_to_360;
-        configEncoder.magnetOffsetDegrees = Math.toDegrees(getOffset());
+        configEncoder.magnetOffsetDegrees = getOffset();
         configEncoder.sensorDirection = true; // TODO ? Direction.CLOCKWISE;
         TalonUtil.checkError(encoder.configAllSettings(configEncoder, CAN_TIMEOUT_MS), "Failed to configure CANCoder");
         TalonUtil.checkError(encoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 10, CAN_TIMEOUT_MS), "Failed to configure CANCoder update rate");
@@ -219,6 +221,6 @@ public class SwerveMotorTurn
 
     private double getOffset()
     {
-        return 0; // TODO ?
+        return offsetAngle;
     }
 }
