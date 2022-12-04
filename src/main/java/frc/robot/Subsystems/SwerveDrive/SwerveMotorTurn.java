@@ -37,7 +37,6 @@ public class SwerveMotorTurn
 
     private final TalonFX motor;
     private final CANCoder encoder;
-    private final double offsetAngle;
 
     private boolean directionInverted = false;
 
@@ -45,13 +44,12 @@ public class SwerveMotorTurn
     {
         motor =  TalonFXFactory.createDefaultTalon(turningMotorChannel);
         encoder = new CANCoder(turningEncoderChannel);
-        offsetAngle = offset;
         
         // configure the external encoder
         CANCoderConfiguration configEncoder = new CANCoderConfiguration();
         configEncoder.absoluteSensorRange = AbsoluteSensorRange.Unsigned_0_to_360;
-        configEncoder.magnetOffsetDegrees = getOffset();
-        configEncoder.sensorDirection = true; // TODO ? Direction.CLOCKWISE;
+        configEncoder.magnetOffsetDegrees = offset;
+        configEncoder.sensorDirection = false; // TODO ? Direction.CLOCKWISE;
         TalonUtil.checkError(encoder.configAllSettings(configEncoder, CAN_TIMEOUT_MS), "Failed to configure CANCoder");
         TalonUtil.checkError(encoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 10, CAN_TIMEOUT_MS), "Failed to configure CANCoder update rate");
         
@@ -69,7 +67,7 @@ public class SwerveMotorTurn
         // configure the motor's sensor
         TalonUtil.checkError(motor.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, CAN_TIMEOUT_MS), "Failed to set Falcon 500 feedback sensor");
         motor.setSensorPhase(true);
-        motor.setInverted(TalonFXInvertType.CounterClockwise);// TODO ? TalonFXInvertType.Clockwise);
+        motor.setInverted(TalonFXInvertType.Clockwise);// TODO ? TalonFXInvertType.Clockwise);
         TalonUtil.checkError(motor.setSelectedSensorPosition(getEncoderAbsoluteAngle() / motorEncoderPositionCoefficient, 0, CAN_TIMEOUT_MS), "Failed to set Falcon 500 encoder position");
 
         // allow the motor to hold our current position
@@ -217,10 +215,5 @@ public class SwerveMotorTurn
     public boolean getDirectionInverted()
     {
         return directionInverted;
-    }
-
-    private double getOffset()
-    {
-        return offsetAngle;
     }
 }
