@@ -1,18 +1,18 @@
 package frc.robot.Subsystems.SwerveDrive;
 
+import java.util.LinkedHashMap;
+import java.util.function.DoubleSupplier;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardContainer;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
 import frc.team4646.PID;
+import frc.team4646.ShuffleboardHelpers;
 
 public class SwerveModule
 {
-    private final SwerveMotorDrive m_driveMotor;
+    private final SwerveMotorDrive driveMotor;
     private final SwerveMotorTurn turnMotor;
-
-    ShuffleboardContainer container;
-
+    
     /**
      * Constructs a SwerveModule with a drive motor, turning motor, and turning encoder.
      *
@@ -20,35 +20,24 @@ public class SwerveModule
      * @param turningMotorChannel CAN ID for the turning motor
      * @param turningEncoderChannel CAN ID for the turning encoder
      */
-    public SwerveModule(int driveMotorChannel, int turningMotorChannel, int turningEncoderChannel, double offset)
+    public SwerveModule(String name, int driveMotorChannel, int turningMotorChannel, int turningEncoderChannel, double offset)
     {
         ModuleConfiguration moduleConfig = Mk4i.MK4I_L2;
 
         PID drivePID = new PID(.06, 0, 0, 0.04535);
-        m_driveMotor = new SwerveMotorDrive(driveMotorChannel, drivePID, moduleConfig);
+        driveMotor = new SwerveMotorDrive(name, driveMotorChannel, drivePID, moduleConfig);
 
         PID turningPID = new PID(0.2, 0, 0.1, 0);
-        turnMotor = new SwerveMotorTurn(turningMotorChannel, turningEncoderChannel, turningPID, moduleConfig, offset);
-    }
-
-    /**
-     * Constructs a SwerveModule with a drive motor, turning motor, turning encoder, and a Shuffleboard layout.
-     *
-     * @param driveMotorChannel CAN ID for the drive motor
-     * @param turningMotorChannel CAN ID for the turning motor
-     * @param turningEncoderChannel CAN ID for the turning encoder
-     * @param layout Shuffleboard layout
-     */
-    public SwerveModule(int driveMotorChannel, int turningMotorChannel, int turningEncoderChannel, double offset, ShuffleboardLayout layout)
-    {
-        this(driveMotorChannel,turningMotorChannel,turningEncoderChannel, offset);
-
-        container = layout;
-        container.addNumber("Current Angle", () -> Math.toDegrees(turnMotor.getMotorCurrentAngle()));
-        container.addNumber("Target Angle", () -> Math.toDegrees(turnMotor.getReferenceAngle()));
-        container.addNumber("Absolute Encoder Angle", () -> Math.toDegrees(turnMotor.getEncoderAbsoluteAngle()));
-        container.addNumber("Current Velocity", () -> m_driveMotor.getActualVelocity());
-        container.addNumber("Target Velocity", () -> m_driveMotor.getDesiredVelocity());
+        turnMotor = new SwerveMotorTurn(name, turningMotorChannel, turningEncoderChannel, turningPID, moduleConfig, offset);
+        
+        var valueMap = new LinkedHashMap<String, DoubleSupplier>();
+        valueMap.put("Current Angle", () -> Math.toDegrees(turnMotor.getMotorCurrentAngle()));
+        valueMap.put("Target Angle", () -> Math.toDegrees(turnMotor.getReferenceAngle()));
+        valueMap.put("Absolute Encoder Angle", () -> Math.toDegrees(turnMotor.getEncoderAbsoluteAngle()));
+        valueMap.put("Offset Angle", () -> offset);
+        valueMap.put("Current Velocity", () -> driveMotor.getActualVelocity());
+        valueMap.put("Target Velocity", () -> driveMotor.getDesiredVelocity());
+        ShuffleboardHelpers.Create_TabWithGrids("Swerve Modules", name, valueMap);
     }
 
     /**
@@ -59,7 +48,7 @@ public class SwerveModule
     public void setDesiredState(SwerveModuleState desiredState)
     {
         boolean invertDrive = turnMotor.setDesiredAngle(desiredState.angle);
-        m_driveMotor.setDesiredVelocity(desiredState.speedMetersPerSecond, invertDrive);
+        driveMotor.setDesiredVelocity(desiredState.speedMetersPerSecond, invertDrive);
     }
 
     /**
@@ -68,6 +57,11 @@ public class SwerveModule
      */
     public SwerveModuleState getState()
     {
-        return new SwerveModuleState(m_driveMotor.getActualVelocity(), new Rotation2d(turnMotor.getEncoderAbsoluteAngle()));
+        return new SwerveModuleState(driveMotor.getActualVelocity(), new Rotation2d(turnMotor.getEncoderAbsoluteAngle()));
+    }
+
+    public void whileDisabled() {
+        // driveMotor.updatePID();
+        // turnMotor.updatePID();
     }
 }

@@ -6,21 +6,24 @@ import com.ctre.phoenix.motorcontrol.SupplyCurrentLimitConfiguration;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import frc.team4646.PID;
+import frc.team4646.PIDTuner;
 import frc.team4646.TalonFXFactory;
 import frc.team4646.TalonUtil;
 
 public class SwerveMotorDrive
 {
-    private static final double TICKS_PER_ROTATION = 2048.0;
 
     private static final int CAN_TIMEOUT_MS = 250;
     
     private TalonFX motor;
+    private PIDTuner pidTuner;
+
     private final double driveSensorVelocityCoefficient;
+    private final double motorSensorTicksPerMeter;
 
     private double desiredVelocityMetersPerSecond;
 
-    public SwerveMotorDrive(int driveMotorChannel, PID pid, ModuleConfiguration moduleConfig)
+    public SwerveMotorDrive(String name, int driveMotorChannel, PID pid, ModuleConfiguration moduleConfig)
     {
         motor = TalonFXFactory.createDefaultTalon(driveMotorChannel);
 
@@ -28,10 +31,13 @@ public class SwerveMotorDrive
         TalonUtil.checkError(motor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, 100), "Motor11: Could not detect encoder: ");
         
         TalonFXFactory.setPID(motor, pid);
+        pidTuner = new PIDTuner("Swerve Tuning", name + " Drive", pid, motor);
 
         // calculate the relationship between the sensor and output in mps
-        double driveSensorPositionCoefficient = Math.PI * moduleConfig.getWheelDiameter() * moduleConfig.getDriveReduction() / TICKS_PER_ROTATION;
+        double driveSensorPositionCoefficient = Math.PI * moduleConfig.getWheelDiameter() * moduleConfig.getDriveReduction() / TalonUtil.TICKS_PER_ROTATION;
         driveSensorVelocityCoefficient = driveSensorPositionCoefficient * 10.0;
+
+        motorSensorTicksPerMeter = Math.PI * moduleConfig.getWheelDiameter() / (moduleConfig.getDriveReduction() * TalonUtil.TICKS_PER_ROTATION);
 
         // apply electrical limits
         motor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 40, 80, .2), CAN_TIMEOUT_MS);
@@ -82,5 +88,17 @@ public class SwerveMotorDrive
      */
     public double getDesiredVelocity() {
         return desiredVelocityMetersPerSecond;
+    }
+
+    public TalonFX getMotor() {
+        return motor;
+    }
+
+    public double getDistance() {
+        return motor.getSelectedSensorPosition() / motorSensorTicksPerMeter;
+    }
+
+    public void updatePID(){
+        pidTuner.updateMotorPIDF();
     }
 }

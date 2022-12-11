@@ -14,13 +14,12 @@ import com.ctre.phoenix.sensors.CANCoderStatusFrame;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.team4646.PID;
+import frc.team4646.PIDTuner;
 import frc.team4646.TalonFXFactory;
 import frc.team4646.TalonUtil;
 
 public class SwerveMotorTurn
 {
-    private static final double TICKS_PER_ROTATION = 2048.0;
-
     private static final int ENCODER_RESET_ITERATIONS = 500;
     private static final double ENCODER_RESET_MAX_ANGULAR_VELOCITY = Math.toRadians(0.5);
 
@@ -37,10 +36,11 @@ public class SwerveMotorTurn
 
     private final TalonFX motor;
     private final CANCoder encoder;
+    private PIDTuner pidTuner;
 
     private boolean directionInverted = false;
 
-    public SwerveMotorTurn(int turningMotorChannel, int turningEncoderChannel, PID pid, ModuleConfiguration moduleConfig, double offset)
+    public SwerveMotorTurn(String name, int turningMotorChannel, int turningEncoderChannel, PID pid, ModuleConfiguration moduleConfig, double offset)
     {
         motor =  TalonFXFactory.createDefaultTalon(turningMotorChannel);
         encoder = new CANCoder(turningEncoderChannel);
@@ -54,10 +54,11 @@ public class SwerveMotorTurn
         TalonUtil.checkError(encoder.setStatusFramePeriod(CANCoderStatusFrame.SensorData, 10, CAN_TIMEOUT_MS), "Failed to configure CANCoder update rate");
         
         // calculate the relationship between the sensors and output angle
-        motorEncoderPositionCoefficient = 2.0 * Math.PI / TICKS_PER_ROTATION * moduleConfig.getSteerReduction();
+        motorEncoderPositionCoefficient = 2.0 * Math.PI / TalonUtil.TICKS_PER_ROTATION * moduleConfig.getSteerReduction();
         motorEncoderVelocityCoefficient = motorEncoderPositionCoefficient * 10.0;
 
         TalonFXFactory.setPID(motor, pid);
+        pidTuner = new PIDTuner("Swerve Tuning", name + " Turn", pid, motor);
 
         // apply electrical limits
         motor.configSupplyCurrentLimit(new SupplyCurrentLimitConfiguration(true, 20, 60, .2), CAN_TIMEOUT_MS);
@@ -215,5 +216,13 @@ public class SwerveMotorTurn
     public boolean getDirectionInverted()
     {
         return directionInverted;
+    }
+
+    public TalonFX getMotor() {
+        return motor;
+    }
+    
+    public void updatePID(){
+        pidTuner.updateMotorPIDF();
     }
 }

@@ -4,6 +4,8 @@ import com.ctre.phoenix.ErrorCode;
 import edu.wpi.first.wpilibj.DriverStation;
 
 public class TalonUtil {
+    public static final double TICKS_PER_ROTATION = 2048.0;
+    
     /**
      * checks the specified error code for issues
      *
