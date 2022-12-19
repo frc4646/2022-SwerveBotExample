@@ -13,6 +13,8 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.RobotContainer;
+import frc.robot.Commands.teleopDrive;
 import frc.team4646.SmartSubsystem;
 
 /** Represents a swerve drive style drivetrain. */
@@ -37,6 +39,10 @@ public class Drivetrain extends SmartSubsystem {
     private final SwerveDriveOdometry m_odometry = new SwerveDriveOdometry(m_kinematics, m_gyro.getRotation2d());
 
     public Drivetrain() {
+        m_gyro.reset();
+    }
+
+    public void resetGyro() {
         m_gyro.reset();
     }
 
