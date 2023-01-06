@@ -1,70 +1,95 @@
 package frc.team4646;
 
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.function.DoubleSupplier;
+import java.util.Map;
 
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInLayouts;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardLayout;
-import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.shuffleboard.SimpleWidget;
-import edu.wpi.first.wpilibj.shuffleboard.SuppliedValueWidget;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants;
 
 /** Updates PIDF of motor controller without needing to program */
 public class PIDTuner {
-    private static final String DASHBOARD_KEY_P = "Tuner: P";
-    private static final String DASHBOARD_KEY_I = "Tuner: I";
-    private static final String DASHBOARD_KEY_D = "Tuner: D";
-    private static final String DASHBOARD_KEY_F = "Tuner: F";
-    private static final String DASHBOARD_KEY_CRACKPOINT = "Tuner: CRACKPOINT";
+    public static class DashboardConfig {
+        public String TabName;
+        public String Name;
+        public int X;
+        public int Y;
+
+        public DashboardConfig(String tabName, String name, int x, int y) {
+            TabName = tabName;
+            Name = name;
+            X = x;
+            Y = y;
+        }
+    }
+
+    private static final String DASHBOARD_KEY_P = "P";
+    private static final String DASHBOARD_KEY_I = "I";
+    private static final String DASHBOARD_KEY_D = "D";
+    private static final String DASHBOARD_KEY_F = "F";
+    private static final String DASHBOARD_KEY_CRACKPOINT = "CRACKPOINT";
+
     private final PID DEFAULT_PID;
     private final double DEFAULT_CRACKPOINT;
     private final int SLOT;
+
     private final List<TalonFX> motors;
     // private final List<CANSparkMax> motors2;
-    private final String name;
-    private final String tab;
 
-    private final LinkedHashMap<String, SimpleWidget> widgets;
+    private PID currentPID;
+
+    private NetworkTableEntry widgetP;
+    private NetworkTableEntry widgetI;
+    private NetworkTableEntry widgetD;
+    private NetworkTableEntry widgetF;
+    private NetworkTableEntry widgetCRACKPOINT;
 
     /** Updates PIDF of motor controller without needing to program */
-    public PIDTuner(String tab, String name, TalonFX... motors) {
-        this(tab, name, new PID(), 0.0, 0, motors);
+    public PIDTuner(DashboardConfig config, TalonFX... motors) {
+        this(config, new PID(), 0.0, 0, motors);
     }
 
     /** Updates PIDF of motor controller without needing to program */
-    public PIDTuner(String tab, String name, PID PID, TalonFX... motors) {
-        this(tab, name, PID, 0.0, 0, motors);
+    public PIDTuner(DashboardConfig config, PID PID, TalonFX... motors) {
+        this(config, PID, 0.0, 0, motors);
     }
 
     /** Updates PIDF of motor controller without needing to program */
-    public PIDTuner(String tab, String name, PID PID, double crackpoint, TalonFX... motors) {
-        this(tab, name, PID, crackpoint, 0, motors);
+    public PIDTuner(DashboardConfig config, PID PID, double crackpoint, TalonFX... motors) {
+        this(config, PID, crackpoint, 0, motors);
     }
 
     /** Updates PIDF of motor controller without needing to program */
-    public PIDTuner(String tab, String name, PID PID, double crackpoint, int slot, TalonFX... motors) {
+    public PIDTuner(DashboardConfig config, PID PID, double crackpoint, int slot, TalonFX... motors) {
         this.motors = List.of(motors);
         // this.motors2 = List.of();
+
         DEFAULT_PID = PID;
         DEFAULT_CRACKPOINT = crackpoint;
         SLOT = slot;
-        this.tab = tab;
-        this.name = name;
+
+        currentPID = PID;
         
-        var valueMap = new LinkedHashMap<String, Double>();
-        valueMap.put(DASHBOARD_KEY_P, DEFAULT_PID.P);
-        valueMap.put(DASHBOARD_KEY_I, DEFAULT_PID.I);
-        valueMap.put(DASHBOARD_KEY_D, DEFAULT_PID.D);
-        valueMap.put(DASHBOARD_KEY_F, DEFAULT_PID.F);
-        valueMap.put(DASHBOARD_KEY_CRACKPOINT, DEFAULT_CRACKPOINT);
-        widgets = ShuffleboardHelpers.Create_TabWithGrids_Editable(tab, name, valueMap);
+        createDash(config);
+    }
+
+    private void createDash(DashboardConfig config) {
+        // get the tab and the current count
+        var tab = Shuffleboard.getTab(config.TabName);
+
+        // add our grid to it
+        var layout = tab.getLayout(config.Name, BuiltInLayouts.kGrid)
+            .withSize(1, 3)
+            .withPosition(config.X, config.Y)
+            .withProperties(Map.of("Number of rows", 5, "Number of columns", 1));
+
+        widgetP = layout.add(DASHBOARD_KEY_P, DEFAULT_PID.P).withPosition(0, 0).getEntry();
+        widgetI = layout.add(DASHBOARD_KEY_I, DEFAULT_PID.I).withPosition(0, 1).getEntry();
+        widgetD = layout.add(DASHBOARD_KEY_D, DEFAULT_PID.D).withPosition(0, 2).getEntry();
+        widgetF = layout.add(DASHBOARD_KEY_F, DEFAULT_PID.F).withPosition(0, 3).getEntry();
+        widgetCRACKPOINT = layout.add(DASHBOARD_KEY_CRACKPOINT, DEFAULT_CRACKPOINT).withPosition(0, 4).getEntry();
     }
 
     /** Updates PIDF of motor controller without needing to program */
@@ -93,16 +118,19 @@ public class PIDTuner {
      * Suggest from subsystem.OnEnabled() or subsystem.OnDisabled().
      */
     public void updateMotorPIDF() {
-        double P = widgets.get(name + DASHBOARD_KEY_P).getEntry().getDouble(DEFAULT_PID.P);
-        double I = widgets.get(name + DASHBOARD_KEY_I).getEntry().getDouble(DEFAULT_PID.I);
-        double D = widgets.get(name + DASHBOARD_KEY_D).getEntry().getDouble(DEFAULT_PID.D);
-        double F = widgets.get(name + DASHBOARD_KEY_F).getEntry().getDouble(DEFAULT_PID.F);
+        double P = widgetP.getDouble(DEFAULT_PID.P);
+        double I = widgetI.getDouble(DEFAULT_PID.I);
+        double D = widgetD.getDouble(DEFAULT_PID.D);
+        double F = widgetF.getDouble(DEFAULT_PID.F);
         
-        for (TalonFX motor : motors) {
-            TalonUtil.checkError(motor.config_kP(SLOT, P, Constants.CAN_TIMEOUT), "Tuner: could not set P: ");
-            TalonUtil.checkError(motor.config_kI(SLOT, I, Constants.CAN_TIMEOUT), "Tuner: could not set I: ");
-            TalonUtil.checkError(motor.config_kD(SLOT, D, Constants.CAN_TIMEOUT), "Tuner: could not set D: ");
-            TalonUtil.checkError(motor.config_kF(SLOT, F, Constants.CAN_TIMEOUT), "Tuner: could not set F: ");
+        // write new PIDF values if changed
+        if (!Util.epsilonEquals(currentPID.P, P) || !Util.epsilonEquals(currentPID.I, I) || 
+            !Util.epsilonEquals(currentPID.D, D) || !Util.epsilonEquals(currentPID.F, F)) {
+            currentPID = new PID(P,I,D,F);
+            
+            for (TalonFX motor : motors) {
+                TalonFXFactory.setPID(motor, currentPID, SLOT);
+            }
         }
         // for (CANSparkMax motor : motors2) {
         //   motor.getPIDController().setP(P, SLOT);
@@ -114,6 +142,6 @@ public class PIDTuner {
     
     /** @return crackpoint. Pass into motor controller's set function. */
     public double getCrackpoint() {
-        return SmartDashboard.getNumber(name + DASHBOARD_KEY_CRACKPOINT, 0.0);
+        return widgetCRACKPOINT.getDouble(DEFAULT_CRACKPOINT);
     }
 }

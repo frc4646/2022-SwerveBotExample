@@ -15,6 +15,10 @@ public class LazyTalonFX extends TalonFX {
         super(deviceNumber);
     }
 
+    public LazyTalonFX(int driveID, String canivoreBusName) {
+        super(driveID, canivoreBusName);
+    }
+
     public double getLastSet() {
         return mLastSet;
     }

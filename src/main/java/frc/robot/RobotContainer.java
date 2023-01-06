@@ -1,16 +1,16 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
-import edu.wpi.first.wpilibj.GenericHID;
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
-import frc.robot.Commands.teleopDrive;
-import frc.robot.Commands.Drive.resetFieldRelative;
-import frc.robot.Subsystems.SwerveDrive.Drivetrain;
+import frc.robot.commands.drive.resetGyro;
+import frc.robot.commands.drive.teleopDrive;
+import frc.robot.controls.AutoModeSelector;
+import frc.robot.subsystems.swerve.SwerveDriveSubsystem;
+import frc.team4646.SmartSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -19,39 +19,92 @@ import frc.robot.Subsystems.SwerveDrive.Drivetrain;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-  // The robot's subsystems and commands are defined here...
-    private final Drivetrain m_swerve = new Drivetrain();
-    private final XboxController m_controller = new XboxController(0);
+    // Subsystems
+    private final SwerveDriveSubsystem SWERVE;
+    
+    private final List<SmartSubsystem> allSubsystems = new ArrayList<SmartSubsystem>();
 
-  // private final ExampleCommand m_autoCommand = new ExampleCommand(m_exampleSubsystem);
-  private final teleopDrive teleopDriveCommand = new teleopDrive(m_swerve, m_controller);
+    // Controllers and Operator Interface
+    private final XboxController driverController = new XboxController(0);
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
-  public RobotContainer() {
-    // Configure the button bindings
-    configureButtonBindings();
-    m_swerve.setDefaultCommand(teleopDriveCommand);
+    public AutoModeSelector autoModeSelector;
 
-  }
+    /** The container for the robot. Contains subsystems, OI devices, and commands. */
+    public RobotContainer() {
+        // create each subsystems
+        SWERVE = new SwerveDriveSubsystem();
 
-  /**
-   * Use this method to define your button->command mappings. Buttons can be created by
-   * instantiating a {@link GenericHID} or one of its subclasses ({@link
-   * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
-   * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
-   */
-  private void configureButtonBindings() {
-    JoystickButton buttonY = new JoystickButton(m_controller, XboxController.Button.kY.value);
-    buttonY.whenPressed(new resetFieldRelative(m_swerve));
-  }
+        // add all subsystems to our list
+        allSubsystems.add(SWERVE);
 
-  /**
-   * Use this to pass the autonomous command to the main {@link Robot} class.
-   *
-   * @return the command to run in autonomous
-   */
-  public Command getAutonomousCommand() {
-    // An ExampleCommand will run in autonomous
-    return null;
-  }
+        // setup default commands for each subsystem
+        SWERVE.setDefaultCommand(new teleopDrive(SWERVE, driverController));
+
+        // Finally, bind buttons to commands
+        configureButtonBindings();
+        
+        autoModeSelector = new AutoModeSelector();
+    }
+
+    /** connect controller buttons to commands */
+    private void configureButtonBindings() {
+        // Reset Gyro
+        new JoystickButton(driverController, XboxController.Button.kY.value).whenPressed(new resetGyro(SWERVE));
+        // TODO or all in one line?
+        // new JoystickButton(driverController, XboxController.Button.kY.value).whenPressed(new InstantCommand(swerveSubsystem::resetGyro, swerveSubsystem));
+    }
+
+    
+    public void cacheSensors() {
+        allSubsystems.forEach(SmartSubsystem::cacheSensors);
+    }
+
+    public void updateHardware() {
+        allSubsystems.forEach(SmartSubsystem::updateHardware);
+    }
+
+    public void updateDashboard() {
+        // boolean isCompetition =  DriverStation.isFMSAttached();
+        // boolean isForceButtonPressed = SmartDashboard.getBoolean(Constants.SHOW_DETAILS, false);
+        // boolean showDetails = !isCompetition || isForceButtonPressed;
+        // allSubsystems.forEach(s -> s.updateDashboard(showDetails));
+        // allSubsystems.forEach(s -> SmartDashboard.putData("Subsystem" + s.getName(), s));
+    }
+
+    public void onEnable(boolean isAutonomous) {
+        allSubsystems.forEach(s -> s.onEnable(isAutonomous));
+    }
+
+    public void onDisable() {
+        allSubsystems.forEach(SmartSubsystem::onDisable);
+        // new DriveDisabled().schedule();
+    }
+    
+    public void whileDisabled() {
+        allSubsystems.forEach(SmartSubsystem::whileDisabled);
+        // new DriveDisabled().schedule();
+    }
+
+    public void runTests() {
+        // if (VISION != null) {
+        //     VISION.setLED(LEDMode.BLINK);
+        // }
+        // Test.reset();
+        // Timer.delay(3.0);
+        // if (VISION != null) {
+        //     VISION.setLED(LEDMode.OFF);
+        // }
+        // allSubsystems.forEach(SmartSubsystem::runTests);
+        // Test.results();
+    }
+
+    /**
+     * Use this to pass the autonomous command to the main {@link Robot} class.
+     *
+     * @return the command to run in autonomous
+     */
+    public Command getAutonomousCommand() {
+        // An ExampleCommand will run in autonomous
+        return null;
+    }
 }

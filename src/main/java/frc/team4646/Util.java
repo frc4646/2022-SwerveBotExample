@@ -71,6 +71,11 @@ public class Util {
         return result;
     }
 
+     /***
+      * Correct for a joystick's deadband. If *value* is below *deadband*, treat as 0
+      * @param value input, 0-1
+      * @param deadband ignore below this, scale from 0-1 above this
+      */
     public static double handleDeadband(double value, double deadband) {
         deadband = Math.abs(deadband);
         if (deadband == 1) {
@@ -78,5 +83,10 @@ public class Util {
         }
         double scaledValue = (value + (value < 0 ? deadband : -deadband)) / (1 - deadband);
         return (Math.abs(value) > Math.abs(deadband)) ? scaledValue : 0;
+    }
+
+    public static double round(double value, int decimals) {
+        double shift = Math.pow(10.0, decimals);
+        return Math.round(value * shift) / shift;
     }
 }
